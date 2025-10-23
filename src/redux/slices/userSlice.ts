@@ -5,7 +5,7 @@ interface User {
   email: string;
   name?: string;
   token?: string;
-  success?: boolean; // ✅ add this line
+  success?: boolean;
 }
 
 interface AuthState {
@@ -23,12 +23,16 @@ const initialState: AuthState = {
 // ✅ Login User thunk
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+  async (
+    { email, password }: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
     try {
-      const response = await axios.post("http://localhost:4000/api/auth/login", { email, password });
-      console.log("redux data", response.data);
+      const response = await axios.post("http://localhost:4000/api/auth/login", {
+        email,
+        password,
+      });
       return response.data;
-       // e.g. { user, token }
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || "Login failed");
     }
@@ -41,13 +45,7 @@ const authSlice = createSlice({
   reducers: {
     logout: (state) => {
       state.user = null;
-      localStorage.removeItem("user");
-    },
-    loadUser: (state) => {
-      const savedUser = localStorage.getItem("user");
-      if (savedUser) {
-        state.user = JSON.parse(savedUser);
-      }
+      localStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -60,7 +58,11 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user || action.payload;
         state.error = null;
-        localStorage.setItem("user", JSON.stringify(state.user));
+
+        // ✅ Token Save for auto login
+        if (action.payload.token) {
+          localStorage.setItem("token", action.payload.token);
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -69,5 +71,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, loadUser } = authSlice.actions;
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

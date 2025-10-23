@@ -14,19 +14,36 @@ import {
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+// logout action
+import { AppDispatch, persistor } from "@/redux/store";
+import { logout } from "@/redux/slices/userSlice";
+import { useDispatch } from "react-redux";
+
 
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   const path = usePathname()
   const isDashboard = path.startsWith("/dashboard")
+
+  const handleLogout = () => {
+  console.log("i am log out");
+
+  persistor.purge(); // redux-persist clear
+  localStorage.removeItem("token");
+
+  dispatch(logout()); // ✅ এখানে useDispatch নয়, dispatch ব্যবহার করো
+  router.push("/");
+};
+
   return (
     <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10">
       {/* LEFT */}
-      {isDashboard && <SidebarTrigger /> }
-      <h1>Login</h1>
+      {isDashboard ? <SidebarTrigger /> :<h1>Dashboard</h1> }
       {/* <Button variant="outline" onClick={toggleSidebar}>
         Custom Button
       </Button> */}
@@ -73,9 +90,14 @@ const Navbar = () => {
               <Settings className="h-[1.2rem] w-[1.2rem] mr-2" />
               Settings
             </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive">
-              <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Logout
+            <DropdownMenuItem asChild>
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
+              >
+                <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" />
+                Logout
+              </button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -6,7 +6,6 @@ import { store } from "@/redux/store";
 import { SidebarProvider } from "../ui/sidebar";
 import Navbar from "../Navbar";
 import AppSidebar from "../AppSidebar";
-import { use } from "react";
 import { usePathname } from "next/navigation";
 
 export default function Providers({
@@ -19,6 +18,8 @@ export default function Providers({
    
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/dashboard");
+
+
   return (
     <ReduxProvider store={store}>
       <ThemeProvider

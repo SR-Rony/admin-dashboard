@@ -20,18 +20,14 @@ export default function AdminLoginPage() {
   const { loading, error, user } = useSelector((state: RootState) => state.auth);
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const resultAction = await dispatch(loginUser({ email, password }));
-
-  // ✅ unwrapAsyncThunk result (recommended)
-  if (loginUser.fulfilled.match(resultAction)) {
-    const data = resultAction.payload;
-    if (data.success) {
-      router.push("/dashboard");
+   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const resultAction = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(resultAction)) {
+      const data = resultAction.payload;
+      if (data.success) router.push("/dashboard");
     }
-  }
-};
+  };
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-background dark:to-background p-4">
