@@ -30,7 +30,7 @@ const Homepage = () => {
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg">
-        <CardList title="Latest Transactions" />
+        <CardList title="All User List" />
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg">
@@ -38,7 +38,7 @@ const Homepage = () => {
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg">
-        <TodoList />
+        <CardList title="All User List" />
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg lg:col-span-2 xl:col-span-1 2xl:col-span-2">
@@ -46,7 +46,7 @@ const Homepage = () => {
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg">
-        <CardList title="Popular Content" />
+        <TodoList />
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import {
   Plus,
   Projector,
   ChevronDown,
+  CircleDollarSign
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +63,11 @@ const items = [
     title: "Search",
     url: "#",
     icon: Search,
+  },
+  {
+    title: "Payments",
+    url: "/dashboard/payments",
+    icon: CircleDollarSign,
   },
   {
     title: "Settings",

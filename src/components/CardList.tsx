@@ -19,6 +19,7 @@ const CardList = ({ title }: { title: string }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -47,6 +48,8 @@ const CardList = ({ title }: { title: string }) => {
         }
 
         const data = await res.json();
+        console.log("order data",data);
+        
         const usersData = data?.payload?.allUser || [];
         setUsers(usersData);
       } catch (err: any) {
@@ -66,33 +69,34 @@ const CardList = ({ title }: { title: string }) => {
     <div className="">
       <h1 className="text-lg font-medium mb-5">{title}</h1>
 
-      <ScrollArea className="max-h-[500px] mt-4 overflow-y-auto">
+      <ScrollArea className="max-h-[400px] mt-4 overflow-y-auto">
         <div className="flex flex-col gap-4">
           {users.length > 0 ? (
             users.map((user) => (
               <Card key={user._id} className="flex-row items-center justify-between gap-2 p-4">
                 {/* Avatar */}
                 <div className="w-12 h-12 rounded-sm relative overflow-hidden">
-                  <Image
+                  {/* <Image
                     src={
-                      user.avatar ||
-                      "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=800"
+                      user.avatar
+                      
                     }
                     alt={user.name}
                     fill
                     className="object-cover"
-                  />
+                  /> */}
                 </div>
 
                 {/* Name + Role */}
                 <CardContent className="flex-1 p-0">
                   <CardTitle className="text-sm font-medium">{user.name}</CardTitle>
-                  <Badge variant="secondary">{user.role || "User"}</Badge>
+                  {/* <Badge variant="secondary">{user.role || "User"}</Badge> */}
                 </CardContent>
 
                 {/* Points */}
                 <CardFooter className="p-0 text-sm font-medium text-muted-foreground">
-                  {user.points ? `${(user.points / 1000).toFixed(1)}K` : "N/A"}
+                  {/* {user.points ? `${(user.points / 1000).toFixed(1)}K` : "N/A"} */}
+                  <Badge variant="secondary">{user.isAdmin ? "Admin" : "User"}</Badge>
                 </CardFooter>
               </Card>
             ))
