@@ -65,6 +65,11 @@ const items = [
     icon: Search,
   },
   {
+    title: "All Users",
+    url: "/dashboard/users",
+    icon: User2,
+  },
+  {
     title: "Payments",
     url: "/dashboard/payments",
     icon: CircleDollarSign,
