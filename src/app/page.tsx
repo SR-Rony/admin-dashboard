@@ -16,22 +16,30 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const dispatch = useDispatch<AppDispatch>();
-  const { user, token, error, loading } = useSelector(
+  const { user, error, loading } = useSelector(
     (state: RootState) => state.auth
   );
+
   const router = useRouter();
 
-  // ✅ যদি user already logged in থাকে → redirect to dashboard
+
   useEffect(() => {
-    if (user && token) {
+    if (user) {
       router.push("/dashboard");
     }
-  }, [user, token, router]);
+  }, [user, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }));
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Login failed:", err);
+    }
   };
 
   return (
@@ -124,6 +132,7 @@ export default function AdminLoginPage() {
             </Button>
           </form>
 
+          {/* Success Message */}
           {user && (
             <p className="text-center text-green-600 mt-3">
               ✅ Logged in successfully! Welcome, {user.email}

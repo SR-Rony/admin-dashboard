@@ -11,17 +11,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const Homepage = () => {
-  const { user, token, loading } = useSelector((state: RootState) => state.auth);
+  const { user, loading } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
+  
 
-  // ✅ যদি user না থাকে → redirect to login
-  useEffect(() => {
-    if (!loading && (!user || !token)) {
-      router.push("/"); // login page
-    }
-  }, [user, token, loading, router]);
+  // useEffect(() => {
+  //   if (!loading && !user) {
+  //     router.push("/"); // login page
+  //   }
+  // }, [user, loading, router]);
 
-  if (!user || !token) return null; // prevent rendering
+  // if (!user) return null; // prevent rendering before redirect
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-4 gap-4">
@@ -38,7 +38,7 @@ const Homepage = () => {
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg">
-        <CardList title="All User List" />
+        {/* <CardList title="All User List" /> */}
       </div>
 
       <div className="bg-primary-foreground p-4 rounded-lg lg:col-span-2 xl:col-span-1 2xl:col-span-2">

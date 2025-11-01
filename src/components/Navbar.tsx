@@ -15,89 +15,72 @@ import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { usePathname, useRouter } from "next/navigation";
-// logout action
-import { AppDispatch, persistor } from "@/redux/store";
-import { logout } from "@/redux/slices/userSlice";
-import { useDispatch } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, persistor, RootState } from "@/redux/store";
+import { logoutUser } from "@/redux/slices/userSlice";
+import axiosInstance from "@/lib/axiosInstance";
 
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const { toggleSidebar } = useSidebar();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
 
-  const path = usePathname()
-  const isDashboard = path.startsWith("/dashboard")
+  const path = usePathname();
+  const isDashboard = path.startsWith("/dashboard");
 
-  const handleLogout = () => {
-  console.log("i am log out");
-
-  persistor.purge(); // redux-persist clear
-  localStorage.removeItem("token");
-
-  dispatch(logout()); // ✅ এখানে useDispatch নয়, dispatch ব্যবহার করো
-  router.push("/");
-};
+  const handleLogout = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      await persistor.purge();
+      localStorage.removeItem("user");
+      dispatch(logoutUser());
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   return (
-    <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10">
-      {/* LEFT */}
-      {isDashboard ? <SidebarTrigger /> :<h1>Dashboard</h1> }
-      {/* <Button variant="outline" onClick={toggleSidebar}>
-        Custom Button
-      </Button> */}
-      {/* RIGHT */}
+    <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10 border-b">
+      {isDashboard ? <SidebarTrigger /> : <Link href="/dashboard"><h1>Dashboard</h1></Link>}
+
       <div className="flex items-center gap-4">
-        <Link href="/">Dashboard</Link>
-        {/* THEME MENU */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
-              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
+              <Sun className="h-[1.2rem] w-[1.2rem]" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem]" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              Light
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              Dark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("system")}>
-              System
-            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("light")}>Light</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("dark")}>Dark</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme("system")}>System</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {/* USER MENU */}
+
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Avatar>
-              <AvatarImage src="https://avatars.githubusercontent.com/u/1486366" />
-              <AvatarFallback>CN</AvatarFallback>
+            <Avatar className="cursor-pointer">
+              <AvatarImage src={"https://api.dicebear.com/9.x/initials/svg?seed=" + (user?.name || "A")} />
+              <AvatarFallback>{user?.name?.[0]?.toUpperCase() || "U"}</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent sideOffset={10}>
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+
+          <DropdownMenuContent sideOffset={10} align="end">
+            <DropdownMenuLabel>{user?.name || "My Account"}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Profile
+              <User className="h-[1.2rem] w-[1.2rem] mr-2" /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <Settings className="h-[1.2rem] w-[1.2rem] mr-2" />
-              Settings
+              <Settings className="h-[1.2rem] w-[1.2rem] mr-2" /> Settings
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <button
-                onClick={handleLogout}
-                className="flex items-center w-full text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-900"
-              >
-                <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" />
-                Logout
-              </button>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer">
+              <LogOut className="h-[1.2rem] w-[1.2rem] mr-2" /> Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
