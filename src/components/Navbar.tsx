@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, persistor, RootState } from "@/redux/store";
 import { logoutUser } from "@/redux/slices/userSlice";
 import axiosInstance from "@/lib/axiosInstance";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const { theme, setTheme } = useTheme();
@@ -26,9 +27,14 @@ const Navbar = () => {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [mounted, setMounted] = useState(false);
 
   const path = usePathname();
   const isDashboard = path.startsWith("/dashboard");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -42,11 +48,32 @@ const Navbar = () => {
     }
   };
 
+  if (!mounted) {
+    // Prevent hydration mismatch
+    return (
+      <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10 border-b">
+        {isDashboard ? <SidebarTrigger /> : <Link href="/dashboard"><h1>Dashboard</h1></Link>}
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" disabled>
+            <Sun className="h-[1.2rem] w-[1.2rem]" />
+          </Button>
+        </div>
+      </nav>
+    );
+  }
+
   return (
     <nav className="p-4 flex items-center justify-between sticky top-0 bg-background z-10 border-b">
-      {isDashboard ? <SidebarTrigger /> : <Link href="/dashboard"><h1>Dashboard</h1></Link>}
+      {isDashboard ? (
+        <SidebarTrigger onClick={toggleSidebar} />
+      ) : (
+        <Link href="/dashboard">
+          <h1 className="font-semibold text-lg">Dashboard</h1>
+        </Link>
+      )}
 
       <div className="flex items-center gap-4">
+        {/* Theme Switch */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
@@ -61,6 +88,7 @@ const Navbar = () => {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger>
             <Avatar className="cursor-pointer">
