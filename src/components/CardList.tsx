@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { ScrollArea } from "./ui/scroll-area";
@@ -20,6 +21,7 @@ const CardList = ({ title }: { title: string }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -42,6 +44,14 @@ const CardList = ({ title }: { title: string }) => {
     fetchUsers();
   }, []);
 
+  // ✅ user click handler
+  const handleUserClick = (id: string) => {
+    if (id) {
+      router.push(`/dashboard/users/${id}`);
+    }
+  };
+
+  // ✅ UI rendering
   if (loading) return <p>Loading users...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
@@ -55,16 +65,16 @@ const CardList = ({ title }: { title: string }) => {
             users.map((user) => (
               <Card
                 key={user._id}
-                className="flex items-center justify-between p-4"
+                onClick={() => handleUserClick(user._id)}
+                className="flex flex-row items-center justify-between p-3 cursor-pointer hover:bg-muted transition"
               >
                 <div>
                   <CardTitle className="text-sm font-medium">
                     {user.name}
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    {user.email}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
                 </div>
+
                 <Badge variant={user.isAdmin ? "default" : "secondary"}>
                   {user.isAdmin ? "Admin" : "User"}
                 </Badge>

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "@/redux/slices/userSlice";
+import { loginUser, clearError } from "@/redux/slices/userSlice";
 import type { AppDispatch, RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
 
@@ -18,19 +18,18 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
-  const { user, error, loading } = useSelector(
-    (state: RootState) => state.auth
-  );
-
+  const { user, error, loading } = useSelector((state: RootState) => state.auth);
   const router = useRouter();
 
-
+  // Redirect if logged in
   useEffect(() => {
-    if (user) {
-      router.push("/dashboard");
-    }
+    if (user) router.push("/dashboard");
   }, [user, router]);
 
+  // Clear error when typing again
+  useEffect(() => {
+    if (error && (email || password)) dispatch(clearError());
+  }, [email, password, error, dispatch]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,15 +43,16 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-background dark:to-background p-4">
-      <Card className="w-full max-w-md backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 shadow-xl border border-slate-200 dark:border-background rounded-2xl">
+      <Card className="w-full max-w-md backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 shadow-lg border border-slate-200 dark:border-background rounded-2xl">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-semibold tracking-tight">
             Admin Login
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Sign in to your admin dashboard
+            Sign in to access your dashboard
           </p>
         </CardHeader>
+
         <CardContent>
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email */}
@@ -91,22 +91,15 @@ export default function AdminLoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember me + Forgot password */}
+            {/* Options */}
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 dark:border-gray-700"
-                />
+                <input type="checkbox" className="rounded border-gray-300 dark:border-gray-700" />
                 Remember me
               </label>
               <Link
@@ -118,9 +111,7 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Error Message */}
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-500 text-center">{error}</p>}
 
             {/* Login Button */}
             <Button

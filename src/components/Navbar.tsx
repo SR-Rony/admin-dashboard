@@ -37,16 +37,14 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await axiosInstance.post("/auth/logout");
-      await persistor.purge();
-      localStorage.removeItem("user");
-      dispatch(logoutUser());
-      router.push("/");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+  try {
+    await dispatch(logoutUser()); // redux + cookie clear
+    await persistor.purge(); // persist storage clear
+    router.push("/"); // redirect to login
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
 
   if (!mounted) {
     // Prevent hydration mismatch
