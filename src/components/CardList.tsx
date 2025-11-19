@@ -10,11 +10,9 @@ import axiosInstance from "@/lib/axiosInstance";
 interface User {
   _id: string;
   name: string;
-  email: string;
-  avatar?: string;
-  role?: string;
-  points?: number;
-  isAdmin?: boolean;
+  phone: string;
+  role: string;
+  isVerified: boolean;
 }
 
 const CardList = ({ title }: { title: string }) => {
@@ -28,13 +26,16 @@ const CardList = ({ title }: { title: string }) => {
       try {
         setLoading(true);
         setError(null);
-        const res = await axiosInstance.get("/user");
-
+        const res = await axiosInstance.get("/user"); // ✅ must be protected route (admin only)
         const usersData = res.data?.payload?.allUser || [];
+        console.log("user data",usersData);
+        
         setUsers(usersData);
       } catch (err: any) {
         const message =
-          err.response?.data?.message || err.message || "Failed to fetch users";
+          err.response?.data?.message || "Failed to fetch users";
+          console.log("errrrro",err);
+          
         setError(message);
       } finally {
         setLoading(false);
@@ -44,14 +45,10 @@ const CardList = ({ title }: { title: string }) => {
     fetchUsers();
   }, []);
 
-  // ✅ user click handler
   const handleUserClick = (id: string) => {
-    if (id) {
-      router.push(`/dashboard/users/${id}`);
-    }
+    if (id) router.push(`/dashboard/users/${id}`);
   };
 
-  // ✅ UI rendering
   if (loading) return <p>Loading users...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
@@ -68,15 +65,16 @@ const CardList = ({ title }: { title: string }) => {
                 onClick={() => handleUserClick(user._id)}
                 className="flex flex-row items-center justify-between p-3 cursor-pointer hover:bg-muted transition"
               >
-                <div>
-                  <CardTitle className="text-sm font-medium">
-                    {user.name}
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">{user.email}</p>
-                </div>
+                
+                <CardTitle className="text-sm font-medium">
+                  {user.name}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {user.phone}
+                </p>
 
-                <Badge variant={user.isAdmin ? "default" : "secondary"}>
-                  {user.isAdmin ? "Admin" : "User"}
+                <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                  {user.role === "admin" ? "Admin" : "User"}
                 </Badge>
               </Card>
             ))
