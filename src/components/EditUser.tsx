@@ -30,12 +30,12 @@ import { Button } from "./ui/button";
 import { useEffect } from "react";
 import axiosInstance from "@/lib/axiosInstance";
 
+// ✅ form validation schema
 const formSchema = z.object({
   username: z.string().min(2, { message: "Username must be at least 2 characters!" }).max(50),
   email: z.string().email({ message: "Invalid email address!" }),
-  phone: z.string().min(10).max(15),
-  location: z.string().min(2),
-  role: z.enum(["admin", "user"]),
+  phone: z.string().min(10, { message: "Phone must be at least 10 characters" }).max(15, { message: "Phone max 15 characters" }),
+  isAdmin: z.boolean(),
 });
 
 interface User {
@@ -45,7 +45,6 @@ interface User {
   avatar?: string;
   isAdmin?: boolean;
   phone?: string;
-  location?: string;
 }
 
 const EditUser = ({ user }: { user: User }) => {
@@ -55,34 +54,34 @@ const EditUser = ({ user }: { user: User }) => {
       username: "",
       email: "",
       phone: "",
-      location: "",
-      role: "user",
+      isAdmin: false,
     },
   });
 
+  // ✅ set default user data
   useEffect(() => {
     if (user) {
       form.reset({
         username: user?.name || "",
         email: user?.email || "",
         phone: user?.phone || "",
-        location: user?.location || "",
-        role: user?.isAdmin ? "admin" : "user",
+        isAdmin: user?.isAdmin ?? false,
       });
     }
   }, [user, form]);
 
+  // ✅ submit
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const res = await axiosInstance.put(`/user/update/${user._id}`, {
         name: values.username,
         phone: values.phone,
-        // location: values.location,
-        isAdmin: values.role,
+        isAdmin: values.isAdmin, // ✅ সরাসরি boolean হিসেবে পাঠানো হচ্ছে
       });
-      console.log("Updated successfully:", res.data);
+
+      console.log("✅ Updated successfully:", res.data);
     } catch (err) {
-      console.error("Update failed:", err);
+      console.error("❌ Update failed:", err);
     }
   };
 
@@ -103,7 +102,6 @@ const EditUser = ({ user }: { user: User }) => {
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl><Input {...field} /></FormControl>
-                <FormDescription>This is your public username.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -116,7 +114,7 @@ const EditUser = ({ user }: { user: User }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
-                <FormControl><Input {...field} disabled /></FormControl>
+                <FormControl><Input {...field} readOnly /></FormControl>
                 <FormDescription>Email cannot be changed.</FormDescription>
                 <FormMessage />
               </FormItem>
@@ -131,45 +129,35 @@ const EditUser = ({ user }: { user: User }) => {
               <FormItem>
                 <FormLabel>Phone</FormLabel>
                 <FormControl><Input {...field} /></FormControl>
-                <FormDescription>Admin can see your phone number.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Location */}
-          {/* <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location</FormLabel>
-                <FormControl><Input {...field} /></FormControl>
-                <FormDescription>This is your public location.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
-
-          {/* Role */}
+          {/* isAdmin */}
           <FormField
             control={form.control}
-            name="role"
+            name="isAdmin"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Role</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  onValueChange={(val) => field.onChange(val === "true")}
+                  value={field.value ? "true" : "false"}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="user">User</SelectItem>
+                    <SelectItem value="true">Admin</SelectItem>
+                    <SelectItem value="false">User</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormDescription>Only verified users can be admin.</FormDescription>
+                <FormDescription>
+                  Choose whether this user has admin access.
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

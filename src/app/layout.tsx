@@ -4,6 +4,7 @@ import { Inter, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { cookies } from "next/headers";
 import Providers from "@/components/providers/Providers";
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = Inter({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default async function RootLayout({
         {/* ✅ Redux Provider wraps the entire app */}
         <Providers defaultOpen={defaultOpen} >
           {children}
+          <Toaster />
         </Providers>
       </body>
     </html>

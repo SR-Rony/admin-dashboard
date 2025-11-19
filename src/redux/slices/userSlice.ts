@@ -1,11 +1,13 @@
+// store/slices/userSlice.ts
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosInstance from "@/lib/axiosInstance";
 
 interface User {
   _id?: string;
   name?: string;
-  email: string;
+  phone?: string;
   role?: string;
+  isVerified?: boolean;
 }
 
 interface AuthState {
@@ -14,17 +16,8 @@ interface AuthState {
   error: string | null;
 }
 
-const getUserFromLocalStorage = (): User | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    return JSON.parse(localStorage.getItem("user") || "null");
-  } catch {
-    return null;
-  }
-};
-
 const initialState: AuthState = {
-  user: getUserFromLocalStorage(),
+  user: null,
   loading: false,
   error: null,
 };
@@ -32,18 +25,19 @@ const initialState: AuthState = {
 // ✅ Login thunk
 export const loginUser = createAsyncThunk<
   User,
-  { email: string; password: string },
+  { phone: string; password: string },
   { rejectValue: string }
->("auth/loginUser", async ({ email, password }, { rejectWithValue }) => {
+>("auth/loginUser", async ({ phone, password }, { rejectWithValue }) => {
   try {
-    const { data } = await axiosInstance.post("/auth/login", { email, password });
+    const { data } = await axiosInstance.post("/auth/login", { phone, password });
     const user = data?.payload?.user;
 
-    if (user) localStorage.setItem("user", JSON.stringify(user));
+    if (!user) return rejectWithValue("User not found");
+    if (!user.isVerified) return rejectWithValue("Please verify your phone number first");
 
     return user;
   } catch (err: any) {
-    return rejectWithValue(err.response?.data?.message || "Invalid email or password");
+    return rejectWithValue(err.response?.data?.message || "Invalid phone or password");
   }
 });
 
@@ -51,11 +45,8 @@ export const loginUser = createAsyncThunk<
 export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
   try {
     await axiosInstance.post("/auth/logout");
-  } catch (err) {
-    console.warn("Logout request failed, but proceeding to clear local data.");
-  } finally {
-    localStorage.removeItem("user");
-    sessionStorage.clear();
+  } catch {
+    console.warn("Logout request failed — clearing local storage anyway.");
   }
 });
 
@@ -69,7 +60,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -82,7 +72,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload || "Login failed";
       })
-      // Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.loading = false;

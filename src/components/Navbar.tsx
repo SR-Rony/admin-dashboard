@@ -36,15 +36,34 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
-  const handleLogout = async () => {
+const handleLogout = async () => {
   try {
-    await dispatch(logoutUser()); // redux + cookie clear
-    await persistor.purge(); // persist storage clear
-    router.push("/"); // redirect to login
+    // ১️⃣ Redux state থেকে user remove
+    await dispatch(logoutUser()).unwrap();
+
+    // ২️⃣ persist storage clear
+    await persistor.purge();
+
+    // ৩️⃣ localStorage/sessionStorage clear (extra safety)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("user");
+      sessionStorage.clear();
+    }
+
+    // ৪️⃣ backend cookie remove (frontend থেকে API call)
+    try {
+      await axiosInstance.post("/auth/logout"); // backend এর logout endpoint
+    } catch (err) {
+      console.warn("Logout API failed, continuing anyway.");
+    }
+
+    // ৫️⃣ redirect to home/login
+    router.push("/");
   } catch (error) {
     console.error("Logout failed:", error);
   }
 };
+
 
   if (!mounted) {
     // Prevent hydration mismatch
